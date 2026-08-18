@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Garbage Classification & Waste Sorting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <!-- TensorFlow.js and MobileNet -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Navbar / Header -->
+      <header class="navbar">
+        <div class="logo">
+          <span class="logo-icon">♻️</span>
+          <span class="logo-text">EcoSort <small>AI</small></span>
+        </div>
+        <div class="subtitle">AI-Powered Garbage & Waste Classification</div>
+      </header>
+
+      <!-- Main Content Container -->
+      <main class="main-content">
+        <!-- Hero Banner -->
+        <section class="hero-section">
+          <h1>Smart Waste Sorting with AI</h1>
+          <p>
+            Upload or drag & drop an image of waste material. Our computer vision model instantly identifies the garbage type and provides proper recycling & disposal guidance.
+          </p>
+        </section>
+
+        <!-- Upload & Analysis Grid -->
+        <div class="classification-grid">
+          <!-- Left Column: Image Upload & Preview -->
+          <div class="card upload-card">
+            <h2>1. Upload Waste Image</h2>
+            <div class="drop-zone" id="drop-zone">
+              <input type="file" id="file-input" accept="image/*" class="file-input" />
+              <div class="drop-zone-content" id="drop-zone-content">
+                <div class="upload-icon">📸</div>
+                <p class="primary-text">Drag & drop your image here or <span>Browse</span></p>
+                <p class="secondary-text">Supports JPG, PNG, WEBP</p>
+              </div>
+              <img id="image-preview" class="image-preview hidden" alt="Garbage Preview" />
+            </div>
+
+            <!-- Sample Images Quick Selector -->
+            <div class="sample-section">
+              <span class="sample-label">Or try sample waste items:</span>
+              <div class="sample-chips">
+                <button type="button" class="chip" data-sample="plastic">🍾 Plastic Bottle</button>
+                <button type="button" class="chip" data-sample="cardboard">📦 Cardboard Box</button>
+                <button type="button" class="chip" data-sample="metal">🥫 Aluminum Can</button>
+                <button type="button" class="chip" data-sample="paper">📄 Paper/Newspaper</button>
+                <button type="button" class="chip" data-sample="glass">🍷 Glass Bottle</button>
+                <button type="button" class="chip" data-sample="organic">🍏 Bio/Organic Waste</button>
+              </div>
+            </div>
+
+            <button type="button" id="classify-btn" class="classify-btn" disabled>
+              <span>Classify Waste Item</span> ✨
+            </button>
+          </div>
+
+          <!-- Right Column: AI Analysis Result -->
+          <div class="card result-card">
+            <h2>2. Classification Results</h2>
+
+            <!-- Loading Spinner -->
+            <div id="loading-state" class="loading-state hidden">
+              <div class="spinner"></div>
+              <p>Analyzing image features with Computer Vision...</p>
+            </div>
+
+            <!-- Initial Placeholder -->
+            <div id="empty-state" class="empty-state">
+              <div class="placeholder-icon">♻️</div>
+              <p>Upload an image above to see real-time waste classification, confidence score, and disposal guidance.</p>
+            </div>
+
+            <!-- Analysis Output Card -->
+            <div id="result-content" class="result-content hidden">
+              <div class="result-header">
+                <div class="category-badge" id="category-badge">
+                  <span id="badge-icon">♻️</span>
+                  <span id="badge-name">Plastic</span>
+                </div>
+                <div class="confidence-tag">
+                  Confidence: <strong id="confidence-val">94.8%</strong>
+                </div>
+              </div>
+
+              <!-- Confidence Progress Bar -->
+              <div class="progress-bar-wrapper">
+                <div class="progress-bar" id="progress-bar"></div>
+              </div>
+
+              <!-- Waste Details & Recycling Advice -->
+              <div class="advice-box" id="advice-box">
+                <h3>Recommended Disposal Bin</h3>
+                <div class="bin-indicator" id="bin-indicator">
+                  <span class="bin-icon" id="bin-icon">🟡</span>
+                  <div class="bin-info">
+                    <h4 id="bin-title">Yellow Bin — Recyclable Plastic</h4>
+                    <p id="bin-desc">Rinse containers before disposal. Remove bottle caps if non-recyclable.</p>
+                  </div>
+                </div>
+
+                <div class="impact-info">
+                  <h4>🌱 Environmental Impact Tip</h4>
+                  <p id="impact-desc">Recyclable plastics take 450+ years to decompose in landfills. Recycling 1 ton saves 5,774 kWh of energy.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Waste Categories Info Section -->
+        <section class="categories-overview">
+          <h2>Supported Waste Categories</h2>
+          <div class="categories-grid">
+            <div class="cat-card">
+              <span class="cat-icon">🍾</span>
+              <h3>Plastic</h3>
+              <p>PET bottles, milk jugs, food containers, caps</p>
+              <span class="bin-pill yellow">Yellow Bin</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-icon">📦</span>
+              <h3>Cardboard</h3>
+              <p>Corrugated boxes, cereal boxes, cardboard packaging</p>
+              <span class="bin-pill blue">Blue Bin</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-icon">🍷</span>
+              <h3>Glass</h3>
+              <p>Beverages, jars, medicine bottles, glassware</p>
+              <span class="bin-pill green">Green Bin</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-icon">🥫</span>
+              <h3>Metal</h3>
+              <p>Soda cans, tin cans, aluminum foil, aerosol cans</p>
+              <span class="bin-pill gray">Gray Bin</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-icon">📄</span>
+              <h3>Paper</h3>
+              <p>Newspapers, office paper, notebooks, envelopes</p>
+              <span class="bin-pill blue">Blue Bin</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-icon">🍏</span>
+              <h3>Organic & Trash</h3>
+              <p>Food scraps, fruit peels, compostable bio-waste</p>
+              <span class="bin-pill black">Black Bin</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>Built with TensorFlow.js & MobileNet • Developed by <strong>Mahesh More</strong></p>
+      </footer>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>
